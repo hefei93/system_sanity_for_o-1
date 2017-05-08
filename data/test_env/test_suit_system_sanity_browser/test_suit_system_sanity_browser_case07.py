@@ -1,7 +1,7 @@
 # coding=utf-8
 '''
-@author: hu_ch
-for android N
+@author: c_wwan
+for android O
 '''
 
 import fs_wrapper
@@ -12,6 +12,7 @@ from test_case_base import TestCaseBase
 from qrd_shared.case import *
 from test_suit_system_sanity_browser import *
 from urlparse import clear_cache
+import os
 
 class test_suit_system_sanity_browser_case07(TestCaseBase):
     '''
@@ -20,32 +21,23 @@ class test_suit_system_sanity_browser_case07(TestCaseBase):
     '''
     '''
     "Procedure:
-    Step1:disable wlan,set data is slot1
-    Step2:visit websites
-    Step3:change data is slot2
-    Step4：visit websites
+    Step1:Launch browser
+    Step2:open baidu
+    Step3:clear browser history
     Verification: 
-    ER1:both slot1 or slot2 can visit websites successfully 
+    ER1:history can clear successfully
     
     '''
     
     def test_case_main(self, case_results):
-        global case_flag , TAG,result, recoreName,p  
+        global case_flag , TAG, recoreName,p     
         case_flag = False
-        recordName=''.join(__name__.split('_')[-2:])    
-        result=[]
-        TAG = 'slot1 and slot2 visit websites '
+        recordName=''.join(__name__.split('_')[-2:])      
+        TAG = 'Browser zoom in/out '
         log_test_framework(TAG, self.name + " -Start")
+        
 
-        start_activity('com.android.settings','com.android.settings.Settings')   
-        search_text("WLAN")
-        click_textview_by_text("WLAN") 
-        settings.disable_wlan()
-        send_key(KEY_BACK)
-        settings.set_default_data(1)
-        send_key(KEY_BACK)
-        send_key(KEY_BACK)
-        send_key(KEY_BACK)
+
         start_activity("com.android.browser", "org.chromium.chrome.browser.ChromeTabbedActivity")
         p=subprocess.Popen('adb shell screenrecord /sdcard/%s.mp4'%recordName,shell=True)
         if wait_for_fun(lambda:search_view_by_id('permission_allow_button'), True, 15):
@@ -57,14 +49,19 @@ class test_suit_system_sanity_browser_case07(TestCaseBase):
                 if wait_for_fun(lambda:search_view_by_id('next_button'), True, 5):
                     click_button_by_id('next_button')
                     if wait_for_fun(lambda:search_view_by_id('next_button'), True, 5):
-                        click_button_by_id('next_button')  
-        result.append(openUrl('www.baidu.com','百度一下'))
-        start_activity('com.android.settings','com.android.settings.Settings')  
-        settings.set_default_data(2)
-        start_activity("com.android.browser", "org.chromium.chrome.browser.ChromeTabbedActivity")
-        result.append(openUrl('www.sina.com','手机新浪'))
-        if not False in result:case_flag=True
-        if search_text('has stopped',searchFlag=TEXT_CONTAINS,isScrollable=0):
+                        click_button_by_id('next_button')               
+        openUrl('m.sohu.com')            
+        sleep(5)
+        enableForceenablezoom()
+
+        zoom_by_param(ZOOM_DOWN)
+        sleep(5)
+        zoom_by_param(ZOOM_UP)
+        case_flag=True
+        
+        enableForceenablezoom()
+          
+        if search_text('has stopped',searchFlag=TEXT_CONTAINS, isScrollable=0):
             log_test_framework("system_sanity_browser_case1:", "Popup has stopped")
             take_screenshot()
             click_textview_by_text('OK')
@@ -104,10 +101,8 @@ class test_suit_system_sanity_browser_case07(TestCaseBase):
             log_test_case(self.case_config_map[fs_wrapper.CASE_NAME_ATTR], TAG + ' : case fail')
             print_report_line(self.case_config_map[fs_wrapper.CASE_NAME_ATTR] + TAG + ' : \tfail')
             save_fail_log()
-        p.terminate()   
+        p.terminate()
+                    
 
-        
-
-        
     
     
